@@ -1,0 +1,36 @@
+/* 只使用 VS Code 主题变量，这样在深色、浅色、高对比度主题下都自然。 */
+body {
+	margin: 0;
+	padding: 40px 32px;
+	font-family: var(--vscode-font-family);
+	font-size: var(--vscode-font-size);
+	color: var(--vscode-foreground);
+	text-align: left;
+}
+.icon {
+	font-size: 28px;
+	opacity: .5;
+	margin-bottom: 12px;
+}
+h1 {
+	margin: 0 0 6px;
+	font-size: 14px;
+	font-weight: 600;
+}
+.reason {
+	margin: 0 0 20px;
+	color: var(--vscode-descriptionForeground);
+}
+.links {
+	display: flex;
+	gap: 16px;
+}
+a {
+	color: var(--vscode-textLink-foreground);
+	text-decoration: none;
+	cursor: pointer;
+}
+a:hover {
+	color: var(--vscode-textLink-activeForeground);
+	text-decoration: underline;
+}
