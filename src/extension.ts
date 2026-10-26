@@ -3,6 +3,7 @@ import { EmbedChecker } from './embedChecker';
 import { SiteTreeProvider, TreeNode } from './siteTree';
 import { SitePanel } from './sitePanel';
 import { getUserSites } from './sites';
+import { registerCommands } from './commands';
 
 export function activate(context: vscode.ExtensionContext) {
 	const checker = new EmbedChecker();
@@ -21,6 +22,8 @@ export function activate(context: vscode.ExtensionContext) {
 			SitePanel.show(context, node.site, node.source, verdict);
 		}),
 	);
+
+	registerCommands(context, checker, provider);
 
 	// 后台预先检测“我的网站”（不 await），这样重启后 ⚠ 标记也能出现
 	for (const site of getUserSites()) {

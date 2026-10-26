@@ -57,7 +57,50 @@
     "commands": [
       {
         "command": "webNav.open",
-        "title": "打开网站"
+        "title": "打开网站",
+        "category": "网站导航"
+      },
+      {
+        "command": "webNav.addSite",
+        "title": "添加网站",
+        "category": "网站导航",
+        "icon": "$(add)"
+      },
+      {
+        "command": "webNav.refresh",
+        "title": "刷新",
+        "category": "网站导航",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "webNav.openInBrowser",
+        "title": "在浏览器中打开",
+        "category": "网站导航"
+      },
+      {
+        "command": "webNav.copyUrl",
+        "title": "复制链接",
+        "category": "网站导航"
+      },
+      {
+        "command": "webNav.rename",
+        "title": "重命名",
+        "category": "网站导航"
+      },
+      {
+        "command": "webNav.editUrl",
+        "title": "修改网址",
+        "category": "网站导航"
+      },
+      {
+        "command": "webNav.remove",
+        "title": "移除",
+        "category": "网站导航"
+      },
+      {
+        "command": "webNav.addRecommended",
+        "title": "添加到我的网站",
+        "category": "网站导航"
       }
     ],
     "menus": {
@@ -65,6 +108,79 @@
         {
           "command": "webNav.open",
           "when": "false"
+        },
+        {
+          "command": "webNav.openInBrowser",
+          "when": "false"
+        },
+        {
+          "command": "webNav.copyUrl",
+          "when": "false"
+        },
+        {
+          "command": "webNav.rename",
+          "when": "false"
+        },
+        {
+          "command": "webNav.editUrl",
+          "when": "false"
+        },
+        {
+          "command": "webNav.remove",
+          "when": "false"
+        },
+        {
+          "command": "webNav.addRecommended",
+          "when": "false"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "webNav.addSite",
+          "when": "view == webNav.sites",
+          "group": "navigation"
+        },
+        {
+          "command": "webNav.refresh",
+          "when": "view == webNav.sites",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "webNav.openInBrowser",
+          "when": "viewItem == site.mine",
+          "group": "1_open"
+        },
+        {
+          "command": "webNav.copyUrl",
+          "when": "viewItem == site.mine",
+          "group": "1_open"
+        },
+        {
+          "command": "webNav.rename",
+          "when": "viewItem == site.mine",
+          "group": "2_edit"
+        },
+        {
+          "command": "webNav.editUrl",
+          "when": "viewItem == site.mine",
+          "group": "2_edit"
+        },
+        {
+          "command": "webNav.remove",
+          "when": "viewItem == site.mine",
+          "group": "3_remove"
+        },
+        {
+          "command": "webNav.openInBrowser",
+          "when": "viewItem == site.recommended",
+          "group": "1_open"
+        },
+        {
+          "command": "webNav.addRecommended",
+          "when": "viewItem == site.recommended",
+          "group": "2_add"
         }
       ]
     }
