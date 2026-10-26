@@ -4,6 +4,14 @@
   "description": "在 VS Code 侧边栏管理常用网站，在编辑器里直接打开",
   "version": "0.0.1",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MailKiller/vscode-web-nav.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MailKiller/vscode-web-nav/issues"
+  },
+  "homepage": "https://github.com/MailKiller/vscode-web-nav#readme",
   "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.103.0"
