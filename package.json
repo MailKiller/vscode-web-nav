@@ -3,11 +3,21 @@
   "displayName": "网站导航",
   "description": "在 VS Code 侧边栏管理常用网站，在编辑器里直接打开",
   "version": "0.0.1",
+  "license": "MIT",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.103.0"
   },
   "categories": [
     "Other"
+  ],
+  "keywords": [
+    "网站导航",
+    "书签",
+    "bookmark",
+    "website",
+    "navigation",
+    "webview"
   ],
   "main": "./dist/extension.js",
   "contributes": {

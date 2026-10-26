@@ -1,9 +1,5 @@
-# Change Log
+# 更新日志
 
-All notable changes to the "web-nav" extension will be documented in this file.
+## 0.0.1
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
-- Initial release
+- 首个版本：侧边栏“我的网站”与“推荐”，在编辑器标签页中打开网站，站点禁止嵌入时显示说明页。

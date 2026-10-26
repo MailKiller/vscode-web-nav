@@ -1,71 +1,37 @@
-# web-nav README
+# 网站导航
 
-This is the README for your extension "web-nav". After writing up a brief description, we recommend including the following sections.
+在 VS Code 侧边栏管理常用网站，并直接在编辑器标签页里打开。适合查文档、刷题、看博客时不想来回切换窗口的开发者。
 
-## Features
+## 功能
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- 侧边栏有两个分组：**我的网站**（自己维护的列表）和**推荐**（内置的学习、面试刷题、博客等站点，可一键添加到“我的网站”）。
+- 点击站点，在编辑器中打开一个标签页浏览，标签页标题固定为 `README.md`。
+- 右键“我的网站”中的条目，可以重命名、修改网址、移除、在浏览器中打开、复制链接。
+- 如果站点不允许被嵌入，标签页里会显示一页说明，并提供“在浏览器中打开”的入口。
 
-For example if there is an image subfolder under your extension project workspace:
+## 怎么添加网站
 
-\!\[feature X\]\(images/feature-x.png\)
+1. 点击左侧活动栏的“网站导航”图标。
+2. 在“网站”视图标题栏点击 **+**（添加网站），依次输入网址和名称。
+3. 或者在“推荐”分组里右键某个站点，选择“添加到我的网站”。
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+也可以直接在设置里编辑 `webNav.sites`。
 
-## Requirements
+## 为什么有些网站打不开
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+插件是用 iframe 把网页嵌进编辑器的。很多网站会通过 `X-Frame-Options` 或 `Content-Security-Policy: frame-ancestors` 这类响应头，明确禁止自己被嵌入到别的页面里（通常是出于安全考虑，防止被恶意页面套用）。遇到这种站点，插件无法绕过，会显示说明页，你可以点击按钮改用系统浏览器打开。
 
-## Extension Settings
+## 设置项
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+| 设置 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `webNav.sites` | 数组 | `[]` | 我的网站列表，每项形如 `{ "name": "名称", "url": "https://example.com" }` |
+| `webNav.showRecommended` | 布尔 | `true` | 是否在侧边栏显示“推荐”分组 |
 
-For example:
+## 致谢
 
-This extension contributes the following settings:
+本插件的想法受 [zw990316/urlNavigation](https://github.com/zw990316/urlNavigation) 启发。
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+## 许可证
 
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+MIT
