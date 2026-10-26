@@ -49,6 +49,16 @@ function upgradeWithProgress(url: string): Thenable<string> {
 	);
 }
 
+/** 保存前重新读取最新设置：等待输入/网络期间设置可能已被改动，不能用旧快照覆盖。 */
+async function saveFresh(change: (sites: Site[]) => boolean): Promise<boolean> {
+	const sites = getUserSites();
+	if (!change(sites)) {
+		return false;
+	}
+	await saveUserSites(sites);
+	return true;
+}
+
 export function registerCommands(context: vscode.ExtensionContext, checker: EmbedChecker, tree: SiteTreeProvider): void {
 	const register = (id: string, handler: (...args: any[]) => unknown) =>
 		context.subscriptions.push(vscode.commands.registerCommand(`webNav.${id}`, handler));
@@ -61,23 +71,28 @@ export function registerCommands(context: vscode.ExtensionContext, checker: Embe
 		if (!typed) {
 			return;
 		}
-		const sites = getUserSites();
-		if (findSite(sites, typed) >= 0) {
+		// 先快速判重，让用户尽早得到反馈；最终判重在保存前
+		if (findSite(getUserSites(), typed) >= 0) {
 			vscode.window.showInformationMessage(ALREADY_EXISTS);
 			return;
 		}
 		const url = await upgradeWithProgress(typed);
-		// 升级后的 https 网址可能已存在，再查一次
-		if (findSite(sites, url) >= 0) {
-			vscode.window.showInformationMessage(ALREADY_EXISTS);
-			return;
-		}
 		const name = await askName(hostnameOf(url));
 		if (!name) {
 			return;
 		}
-		await saveUserSites([...sites, { name, url }]);
-		checkInBackground(url);
+		// 以保存前最新的列表为准再判重（升级后的网址、并发添加都可能重复）
+		const added = await saveFresh(latest => {
+			if (findSite(latest, url) >= 0) {
+				vscode.window.showInformationMessage(ALREADY_EXISTS);
+				return false;
+			}
+			latest.push({ name, url });
+			return true;
+		});
+		if (added) {
+			checkInBackground(url);
+		}
 	});
 
 	register('refresh', () => {
@@ -106,62 +121,82 @@ export function registerCommands(context: vscode.ExtensionContext, checker: Embe
 
 	register('rename', async (node: TreeNode) => {
 		const site = toSite(node);
-		const sites = getUserSites();
-		const index = site ? findSite(sites, site.url) : -1;
-		if (index < 0) {
+		const current = site ? getUserSites()[findSite(getUserSites(), site.url)] : undefined;
+		if (!site || !current) {
 			return;
 		}
-		const name = await askName(sites[index].name);
+		const name = await askName(current.name);
 		if (!name) {
 			return;
 		}
-		sites[index] = { ...sites[index], name };
-		await saveUserSites(sites);
+		// 按 url 在最新列表里重新定位；条目已消失就静默放弃
+		await saveFresh(latest => {
+			const i = findSite(latest, site.url);
+			if (i < 0) {
+				return false;
+			}
+			latest[i] = { ...latest[i], name };
+			return true;
+		});
 	});
 
 	register('editUrl', async (node: TreeNode) => {
 		const site = toSite(node);
-		const sites = getUserSites();
-		const index = site ? findSite(sites, site.url) : -1;
-		if (index < 0) {
+		const before = getUserSites();
+		const index = site ? findSite(before, site.url) : -1;
+		if (!site || index < 0) {
 			return;
 		}
-		const typed = await askUrl(sites[index].url);
+		const typed = await askUrl(before[index].url);
 		if (!typed) {
 			return;
 		}
 		// 与自身相同不算重复，所以只在“别的条目”命中时才拦截
-		const dup = findSite(sites, typed);
-		if (dup >= 0 && dup !== index) {
+		const early = findSite(before, typed);
+		if (early >= 0 && early !== index) {
 			vscode.window.showInformationMessage(ALREADY_EXISTS);
 			return;
 		}
 		const url = await upgradeWithProgress(typed);
-		const dup2 = findSite(sites, url);
-		if (dup2 >= 0 && dup2 !== index) {
-			vscode.window.showInformationMessage(ALREADY_EXISTS);
-			return;
+		// 以保存前最新的列表为准：重新按旧 url 定位，再判重
+		const changed = await saveFresh(latest => {
+			const i = findSite(latest, site.url);
+			if (i < 0) {
+				return false;
+			}
+			const dup = findSite(latest, url);
+			if (dup >= 0 && dup !== i) {
+				vscode.window.showInformationMessage(ALREADY_EXISTS);
+				return false;
+			}
+			latest[i] = { ...latest[i], url };
+			return true;
+		});
+		if (changed) {
+			checkInBackground(url);
 		}
-		sites[index] = { ...sites[index], url };
-		await saveUserSites(sites);
-		checkInBackground(url);
 	});
 
 	register('remove', async (arg: TreeNode | Site): Promise<boolean> => {
 		const site = toSite(arg);
-		const sites = getUserSites();
-		const index = site ? findSite(sites, site.url) : -1;
-		if (index < 0) {
+		const current = site ? getUserSites()[findSite(getUserSites(), site.url)] : undefined;
+		if (!site || !current) {
 			return false;
 		}
 		const answer = await vscode.window.showWarningMessage(
-			`确定从我的网站中移除“${sites[index].name}”吗？`, { modal: true }, '移除');
+			`确定从我的网站中移除“${current.name}”吗？`, { modal: true }, '移除');
 		if (answer !== '移除') {
 			return false;
 		}
-		sites.splice(index, 1);
-		await saveUserSites(sites);
-		return true;
+		// 确认期间条目可能已被删除，按 url 在最新列表里重新定位
+		return saveFresh(latest => {
+			const i = findSite(latest, site.url);
+			if (i < 0) {
+				return false;
+			}
+			latest.splice(i, 1);
+			return true;
+		});
 	});
 
 	register('addRecommended', async (node: TreeNode) => {
@@ -169,12 +204,16 @@ export function registerCommands(context: vscode.ExtensionContext, checker: Embe
 		if (!site) {
 			return;
 		}
-		const sites = getUserSites();
-		if (findSite(sites, site.url) >= 0) {
-			vscode.window.showInformationMessage(ALREADY_EXISTS);
-			return;
+		const added = await saveFresh(latest => {
+			if (findSite(latest, site.url) >= 0) {
+				vscode.window.showInformationMessage(ALREADY_EXISTS);
+				return false;
+			}
+			latest.push({ name: site.name, url: site.url });
+			return true;
+		});
+		if (added) {
+			checkInBackground(site.url);
 		}
-		await saveUserSites([...sites, { name: site.name, url: site.url }]);
-		checkInBackground(site.url);
 	});
 }
