@@ -21,8 +21,12 @@
           "items": {
             "type": "object",
             "properties": {
-              "name": { "type": "string" },
-              "url": { "type": "string" }
+              "name": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
             }
           }
         },
@@ -32,6 +36,37 @@
           "description": "在侧边栏显示“推荐”分组"
         }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "webNav",
+          "title": "网站导航",
+          "icon": "media/activitybar.svg"
+        }
+      ]
+    },
+    "views": {
+      "webNav": [
+        {
+          "id": "webNav.sites",
+          "name": "网站"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "webNav.open",
+        "title": "打开网站"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "webNav.open",
+          "when": "false"
+        }
+      ]
     }
   },
   "scripts": {

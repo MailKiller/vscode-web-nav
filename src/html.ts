@@ -32,6 +32,12 @@ iframe { display: block; border: 0; width: 100%; height: 100%; }
 </html>`;
 }
 
+/** 无法嵌入的原因文案：说明页和侧边栏提示共用，避免两处写出不一致的文字。 */
+export const REASON_TEXT = {
+	blocked: '这个网站禁止被其他页面嵌入，这是它自己的安全设置，插件没有办法绕过。',
+	insecure: '这个网站只支持不加密的 http 连接，VS Code 不允许在编辑器里加载这类页面。',
+} as const;
+
 /** 无法嵌入时的说明页：只用主题变量，保持安静、不刺眼。 */
 export function buildExplanationHtml(o: {
 	url: string;
@@ -44,9 +50,7 @@ export function buildExplanationHtml(o: {
 }): string {
 	const csp = `default-src 'none'; style-src ${o.cspSource}; script-src 'nonce-${o.nonce}';`;
 	const host = escapeHtml(hostnameOf(o.url));
-	const reasonText = o.reason === 'blocked'
-		? '这个网站禁止被其他页面嵌入，这是它自己的安全设置，插件没有办法绕过。'
-		: '这个网站只支持不加密的 http 连接，VS Code 不允许在编辑器里加载这类页面。';
+	const reasonText = REASON_TEXT[o.reason];
 	// 推荐网站不是用户自己添加的，所以不提供移除
 	const removeLink = o.removable ? '<a href="#" data-action="remove">从列表中移除</a>' : '';
 	return `<!DOCTYPE html>
