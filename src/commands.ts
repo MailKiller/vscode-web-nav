@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { EmbedChecker } from './embedChecker';
+import { FaviconChecker } from './faviconChecker';
 import { SiteTreeProvider, TreeNode } from './siteTree';
 import { tryUpgradeToHttps } from './embedCheck';
 import { Site, findSite, getUserSites, hostnameOf, normalizeUrl, saveUserSites } from './sites';
@@ -59,7 +60,7 @@ async function saveFresh(change: (sites: Site[]) => boolean): Promise<boolean> {
 	return true;
 }
 
-export function registerCommands(context: vscode.ExtensionContext, checker: EmbedChecker, tree: SiteTreeProvider): void {
+export function registerCommands(context: vscode.ExtensionContext, checker: EmbedChecker, favicons: FaviconChecker, tree: SiteTreeProvider): void {
 	const register = (id: string, handler: (...args: any[]) => unknown) =>
 		context.subscriptions.push(vscode.commands.registerCommand(`webNav.${id}`, handler));
 
@@ -97,6 +98,7 @@ export function registerCommands(context: vscode.ExtensionContext, checker: Embe
 
 	register('refresh', () => {
 		checker.clear();
+		favicons.clear();
 		// 并发发起所有检测，不逐个等待；check 不会 reject
 		for (const site of getUserSites()) {
 			checkInBackground(site.url);

@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { Site, getUserSites, isRecommendedVisible, CONFIG_SECTION } from './sites';
 import { RECOMMENDED, RecommendedCategory } from './recommended';
 import { EmbedChecker } from './embedChecker';
+import { FaviconChecker } from './faviconChecker';
+import { faviconUrlOf } from './favicon';
 import { PanelSource } from './sitePanel';
 import { REASON_TEXT } from './html';
 
@@ -24,12 +26,13 @@ export class SiteTreeProvider implements vscode.TreeDataProvider<TreeNode>, vsco
 	private readonly showRecommended: () => boolean;
 
 	// deps 默认用真实的设置读取函数；测试时注入假数据，不依赖真实设置
-	constructor(private readonly checker: EmbedChecker, deps: Deps = {}) {
+	constructor(private readonly checker: EmbedChecker, private readonly favicons: FaviconChecker, deps: Deps = {}) {
 		this.userSites = deps.userSites ?? getUserSites;
 		this.showRecommended = deps.showRecommended ?? isRecommendedVisible;
-		// 检测结果更新（⚠ 标记）或设置变化时，重新绘制树
+		// 检测结果更新（⚠ 标记）、favicon 探测完成或设置变化时，重新绘制树
 		this.subscriptions.push(
 			this.checker.onDidChange(() => this.refresh()),
+			this.favicons.onDidChange(() => this.refresh()),
 			vscode.workspace.onDidChangeConfiguration(e => {
 				if (e.affectsConfiguration(CONFIG_SECTION)) {
 					this.refresh();
@@ -94,10 +97,17 @@ export class SiteTreeProvider implements vscode.TreeDataProvider<TreeNode>, vsco
 					tooltip += '\n' + REASON_TEXT[verdict];
 				}
 				item.tooltip = tooltip;
-				try {
-					item.iconPath = vscode.Uri.parse(new URL(site.url).origin + '/favicon.ico');
-				} catch {
-					// 网址无法解析时不设图标
+				// 默认是地球图标；favicon 探测通过后才换成网站自己的图标
+				item.iconPath = new vscode.ThemeIcon('globe');
+				const iconUrl = faviconUrlOf(site.url);
+				if (iconUrl) {
+					const usable = this.favicons.cached(iconUrl);
+					if (usable) {
+						item.iconPath = vscode.Uri.parse(iconUrl);
+					} else if (usable === undefined) {
+						// 还没探测过：后台探测一次（不等待），结果出来后会触发刷新
+						void this.favicons.check(iconUrl);
+					}
 				}
 				return item;
 			}

@@ -25,7 +25,7 @@ suite('embedCheck', () => {
 	test('多条策略任一限制 → blocked', () => assert.strictEqual(h({ 'content-security-policy': "default-src *, frame-ancestors 'self'" }), 'blocked'));
 	test('http 网址 → insecure 且不请求', async () => {
 		let called = false;
-		assert.strictEqual(await checkEmbeddable('http://a.com/', async () => { called = true; throw 0; }), 'insecure');
+		assert.strictEqual(await checkEmbeddable('http://a.com/', async () => { called = true; throw new Error('x'); }), 'insecure');
 		assert.strictEqual(called, false);
 	});
 	test('重定向到 http → insecure', async () => assert.strictEqual(await checkEmbeddable('https://a.com/', fake({}, 'http://a.com/')), 'insecure'));
@@ -34,5 +34,5 @@ suite('embedCheck', () => {
 		await checkEmbeddable('https://a.com/', (_u, init) => new Promise((_r, rej) => init!.signal!.addEventListener('abort', () => rej(new Error('abort')))), 20),
 		'unknown'));
 	test('升级 https 成功', async () => assert.strictEqual(await tryUpgradeToHttps('http://a.com/', fake({})), 'https://a.com/'));
-	test('升级失败返回原网址', async () => assert.strictEqual(await tryUpgradeToHttps('http://a.com/', async () => { throw 0; }), 'http://a.com/'));
+	test('升级失败返回原网址', async () => assert.strictEqual(await tryUpgradeToHttps('http://a.com/', async () => { throw new Error('x'); }), 'http://a.com/'));
 });
