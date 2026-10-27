@@ -19,22 +19,28 @@ function toSite(arg: TreeNode | Site | undefined): Site | undefined {
 	return arg;
 }
 
+// 输入框都开启 ignoreFocusOut：点到别处（比如去浏览器复制网址）时不会被关掉，以免输入白费
+
 /** 输入网址并校验，返回规范化后的网址；取消返回 undefined。 */
-async function askUrl(value?: string): Promise<string | undefined> {
+async function askUrl(title: string, value?: string): Promise<string | undefined> {
 	const input = await vscode.window.showInputBox({
+		title,
 		prompt: '请输入网址',
 		placeHolder: 'https://www.runoob.com',
 		value,
+		ignoreFocusOut: true,
 		validateInput: text => (normalizeUrl(text) ? undefined : INVALID_URL),
 	});
 	return input === undefined ? undefined : normalizeUrl(input);
 }
 
 /** 输入名称，不能为空；取消返回 undefined。 */
-function askName(value: string): Thenable<string | undefined> {
+function askName(title: string, value: string): Thenable<string | undefined> {
 	return vscode.window.showInputBox({
+		title,
 		prompt: '请输入网站名称',
 		value,
+		ignoreFocusOut: true,
 		validateInput: text => (text.trim() ? undefined : '名称不能为空'),
 	}).then(name => name?.trim());
 }
@@ -68,7 +74,7 @@ export function registerCommands(context: vscode.ExtensionContext, checker: Embe
 	const checkInBackground = (url: string) => void checker.check(url);
 
 	register('addSite', async () => {
-		const typed = await askUrl();
+		const typed = await askUrl('添加网站（1/2）');
 		if (!typed) {
 			return;
 		}
@@ -78,7 +84,7 @@ export function registerCommands(context: vscode.ExtensionContext, checker: Embe
 			return;
 		}
 		const url = await upgradeWithProgress(typed);
-		const name = await askName(hostnameOf(url));
+		const name = await askName('添加网站（2/2）', hostnameOf(url));
 		if (!name) {
 			return;
 		}
@@ -127,7 +133,7 @@ export function registerCommands(context: vscode.ExtensionContext, checker: Embe
 		if (!site || !current) {
 			return;
 		}
-		const name = await askName(current.name);
+		const name = await askName('重命名', current.name);
 		if (!name) {
 			return;
 		}
@@ -149,7 +155,7 @@ export function registerCommands(context: vscode.ExtensionContext, checker: Embe
 		if (!site || index < 0) {
 			return;
 		}
-		const typed = await askUrl(before[index].url);
+		const typed = await askUrl('修改网址', before[index].url);
 		if (!typed) {
 			return;
 		}
