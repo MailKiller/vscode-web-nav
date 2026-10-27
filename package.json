@@ -3,6 +3,7 @@
   "displayName": "网站导航",
   "description": "在 VS Code 侧边栏管理常用网站，在编辑器里直接打开",
   "version": "0.0.1",
+  "publisher": "manaster",
   "license": "MIT",
   "repository": {
     "type": "git",
