@@ -21,7 +21,20 @@
             "type": "npm",
             "script": "watch:esbuild",
             "group": "build",
-            "problemMatcher": "$esbuild-watch",
+            // 内联定义，与 esbuild.js 的输出格式对应，不依赖 esbuild-problem-matchers 扩展
+            "problemMatcher": {
+                "owner": "esbuild",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "pattern": [
+                    { "regexp": "^✘ \\[ERROR\\] (.*)$", "message": 1 },
+                    { "regexp": "^\\s+(.*):(\\d+):(\\d+):$", "file": 1, "line": 2, "column": 3 }
+                ],
+                "background": {
+                    "activeBegin": true,
+                    "beginsPattern": "^\\[watch\\] build started",
+                    "endsPattern": "^\\[watch\\] build finished"
+                }
+            },
             "isBackground": true,
             "label": "npm: watch:esbuild",
             "presentation": {
